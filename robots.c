@@ -29,8 +29,8 @@ int char_y;
 char robots_char = '+';
 int robots_speed = 1;
 int robots_num = 10;
-int robots[1][2];
-int junk[1][2];
+int robots[1][3];
+char junk_char = '*';
 int lines = 20;
 int columns = 20;
 
@@ -155,14 +155,21 @@ void draw_screen ()
                     printf (" %c ", char_char);
                 } else {
                     int y, z;
-                    bool robot_here = false;
+                    bool something_here = false;
                     for (y = 0; y < robots_num; y++) {
                         if (x == robots[y][0] && i == (robots[y][1] -1)) {
-                            printf (" %c ", robots_char);
-                            robot_here = true;
+                            // Robot is alive
+                            if (robots[y][2] == 0) {
+                                printf (" %c ", robots_char);
+                                something_here = true;
+                            // Robot has become junk
+                            } else if (robots[y][2] == 1) {
+                                printf (" %c ", junk_char);
+                                something_here = true;
+                            }
                         }
                     }
-                    if (!robot_here) {
+                    if (!something_here) {
                         printf ("   ");
                     }
                 }
@@ -197,7 +204,7 @@ void move_robots ()
     int new_x, new_y, old_x, old_y;
     int i;
     for (i = 0; i < robots_num; i++) {
-        if (robots[i][0] != 0) {
+        if (robots[i][2] == 0) {
             old_x = robots[i][0];
             old_y = robots[i][1];
 
@@ -231,6 +238,7 @@ void set_random_robots ()
     bool checked; 
     for (i = 0; i < robots_num; i++) {
         checked = false;
+        robots[i][2] = 0; // Robot is still alive
         while (!checked) {
             robots[i][0] = random_in_range (1, 20);
             robots[i][1] = random_in_range (1, 20);
@@ -258,16 +266,18 @@ bool check_collision ()
     for (i = 0; i < robots_num; i++) {
         for (x = 0; x < i; x++) {
             if (robots[i][0] == robots[x][0] && robots[i][1] == robots[x][1]) {
+                printf ("collision");
+                getchar ();
                 robots[i][0] = 0;
                 robots[i][1] = 0;
-                robots[x][0] = 0;
-                robots[x][1] = 0;
-                length = sizeof(junk) / sizeof(junk[0]);
-                printf ("%.nd", length);
-                //junk
+                // Indicate that robots are junk
+                robots[i][2] = 1;
+                // Leave one of the two robots in place as junk
+                robots[x][2] = 1;
             }
         }
     }
+    return false;
 }
 
 int random_in_range (unsigned int min, unsigned int max)
