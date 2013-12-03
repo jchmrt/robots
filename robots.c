@@ -22,13 +22,14 @@ void set_random_robots ();
 bool check_collision ();
 int random_in_range (unsigned int min, unsigned int max);
 
-static struct termios oldt, newt;
+static struct termios oldt, newt;   // Needed for random number generation
+bool verbose = false;
 char char_char = '#';
 int char_x;
 int char_y;
 char robots_char = '+';
 int robots_speed = 1;
-int robots_num = 10;
+int robots_num = 1;
 int robots[1][3];
 char junk_char = '*';
 int lines = 20;
@@ -46,8 +47,7 @@ void main (int argc, char** argv)
                     override = true;
                     break;
                 case 'v':
-                    display_version ();
-                    override = true;
+                    verbose = true;
                     break;
             }
         }
@@ -151,13 +151,13 @@ void draw_screen ()
         else {
             printf ("|");
             for (x = 0; x < columns; x++) {
-                if (i == char_y && x == (char_x - 1)) {
+                if (x == (char_x - 1) && i == char_y) {
                     printf (" %c ", char_char);
                 } else {
                     int y, z;
                     bool something_here = false;
                     for (y = 0; y < robots_num; y++) {
-                        if (x == robots[y][0] && i == (robots[y][1] -1)) {
+                        if (x == (robots[y][0] - 1) && i == robots[y][1]) {
                             // Robot is alive
                             if (robots[y][2] == 0) {
                                 printf (" %c ", robots_char);
@@ -178,7 +178,10 @@ void draw_screen ()
             printf ("\n");
         }
     }
-    printf ("%.d, %.d\n", char_x, char_y);
+    if (verbose) {
+        printf ("Char: %.d, %.d\n", char_x, char_y);
+        printf ("Robot: %.d, %.d\n", robots[0][0], robots[0][1]);
+    }
 }
 
 /**
