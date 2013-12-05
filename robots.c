@@ -29,7 +29,7 @@ int char_x;
 int char_y;
 char robots_char = '+';
 int robots_speed = 1;
-int robots_num = 10;
+int robots_num = 1;
 int robots[1][3];
 char junk_char = '*';
 int lines = 20;
@@ -206,25 +206,39 @@ void move_robots ()
 {
     int new_x, new_y, old_x, old_y;
     int i;
+    bool change_x, change_y;
     for (i = 0; i < robots_num; i++) {
         if (robots[i][2] == 0) {
             old_x = robots[i][0];
             old_y = robots[i][1];
 
+            change_x = false;
+            change_y = false;
+
+            // Movement on X-axis
             if (old_x < char_x) {
                 new_x = old_x + robots_speed;
+                change_x = true;
             } else if (old_x > char_x) {
                 new_x = old_x - robots_speed;
+                change_x = true;
             }
 
+            // Movement on Y-axis
             if (old_y < char_y) {
                 new_y = old_y + robots_speed;
+                change_y = true;
             } else if (old_y > char_y) {
                 new_y = old_y - robots_speed;
+                change_y = true;
             }
 
-            robots[i][0] = new_x;
-            robots[i][1] = new_y;
+            if (change_x) {
+                robots[i][0] = new_x;
+            }
+            if (change_y) {
+                robots[i][1] = new_y;
+            }
         }
     }
 }
@@ -265,7 +279,7 @@ void set_random_robots ()
  */
 bool check_collision ()
 {
-    int i, x, length;
+    int i, x;
     for (i = 0; i < robots_num; i++) {
         for (x = 0; x < i; x++) {
             if (robots[i][0] == robots[x][0] && robots[i][1] == robots[x][1]) {
@@ -275,8 +289,8 @@ bool check_collision ()
                 robots[i][2] = 1;
                 // Leave one of the two robots in place as junk
                 robots[x][2] = 1;
+                }
             }
-        }
     }
     return false;
 }
