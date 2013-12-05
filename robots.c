@@ -29,7 +29,7 @@ int char_x;
 int char_y;
 char robots_char = '+';
 int robots_speed = 1;
-int robots_num = 1;
+int robots_num = 10;
 int robots[1][3];
 char junk_char = '*';
 int lines = 20;
@@ -269,8 +269,6 @@ bool check_collision ()
     for (i = 0; i < robots_num; i++) {
         for (x = 0; x < i; x++) {
             if (robots[i][0] == robots[x][0] && robots[i][1] == robots[x][1]) {
-                printf ("collision");
-                getchar ();
                 robots[i][0] = 0;
                 robots[i][1] = 0;
                 // Indicate that robots are junk
