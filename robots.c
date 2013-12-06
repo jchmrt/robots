@@ -3,10 +3,12 @@
  */
 
 #include <stdio.h>
-#include <termios.h> // for direct input
-#include <unistd.h>  // also for direct input
-#include <stdlib.h>  // for clearing screen
-#include <time.h>    // for a time seed to supply for random ints
+#include <string.h>
+#include <termios.h>   // for direct input
+#include <unistd.h>    // also for direct input
+#include <stdlib.h>    // for clearing screen
+#include <time.h>      // for a time seed to supply for random ints
+#include <sys/ioctl.h> // for getting terminal width
 
 typedef enum { false, true } bool;
 
@@ -19,7 +21,9 @@ void move_char (int x, int y);
 void move_robots ();
 void teleport ();
 void set_random_robots ();
+void reset ();
 bool check_collision ();
+bool game_over ();
 int random_in_range (unsigned int min, unsigned int max);
 
 static struct termios oldt, newt;   // Needed for random number generation
@@ -56,7 +60,7 @@ void main (int argc, char** argv)
     if (!override) {
         set_direct_input ();
         bool end = false;
-        bool hit;
+        bool hit, retry;
         srand(time(NULL)); // Set time as seed for random ints
         teleport ();
         set_random_robots ();
@@ -97,6 +101,14 @@ void main (int argc, char** argv)
             move_robots ();
             hit = check_collision ();
             draw_screen ();
+            if (hit) {
+                retry = game_over ();
+                if (retry) {
+                    reset ();
+                } else {
+                    end = true;
+                }
+            }
         }
         restore_direct_input ();
     }
@@ -122,7 +134,6 @@ void set_direct_input ()
 }
 
 void restore_direct_input () {
-    /*restore the old settings*/
     tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
 }
 
@@ -277,6 +288,13 @@ void set_random_robots ()
     }
 }
 
+void reset ()
+{
+    teleport ();
+    set_random_robots ();
+    draw_screen ();
+}
+
 /**
  * Solves collisions of robots
  * and returns true if the player is hit
@@ -301,6 +319,33 @@ bool check_collision ()
         }
     }
     return false;
+}
+
+/**
+ * Shows game over screen
+ * returns true if player wants to retry
+ */
+bool game_over ()
+{
+    struct winsize w;
+    ioctl(0, TIOCGWINSZ, &w);
+
+    int columns = w.ws_col; // w.ws_row for lines
+
+    char *game_over_str = "Game Over!";
+    int indent = (strlen(game_over_str) - columns) / 2;
+
+    system("clear");
+    printf ("%*s%s\n", indent, "", game_over_str);
+    printf ("%*s%s\n", (int)((strlen ("Retry?[y/n]") - columns) / 2), "", "Retry?[y/n]");
+    char input = getchar ();
+    bool output;
+    if (input == 'y') {
+        output = true;
+    } else {
+        output = false;
+    }
+    return output;
 }
 
 int random_in_range (unsigned int min, unsigned int max)
