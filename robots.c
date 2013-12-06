@@ -17,7 +17,7 @@ void display_version ();
 void draw_screen ();
 void move_char (int x, int y);
 void move_robots ();
-void set_random_char ();
+void teleport ();
 void set_random_robots ();
 bool check_collision ();
 int random_in_range (unsigned int min, unsigned int max);
@@ -29,7 +29,7 @@ int char_x;
 int char_y;
 char robots_char = '+';
 int robots_speed = 1;
-int robots_num = 1;
+int robots_num = 10;
 int robots[1][3];
 char junk_char = '*';
 int lines = 20;
@@ -56,8 +56,9 @@ void main (int argc, char** argv)
     if (!override) {
         set_direct_input ();
         bool end = false;
+        bool hit;
         srand(time(NULL)); // Set time as seed for random ints
-        set_random_char ();
+        teleport ();
         set_random_robots ();
         draw_screen ();
         while (!end) {
@@ -87,11 +88,14 @@ void main (int argc, char** argv)
                 case '7':
                     move_char (-1, -1);
                     break;
+                case 't':
+                    teleport ();
+                    break;
                 default:
                     break;
             }
             move_robots ();
-            check_collision ();
+            hit = check_collision ();
             draw_screen ();
         }
         restore_direct_input ();
@@ -243,7 +247,7 @@ void move_robots ()
     }
 }
 
-void set_random_char ()
+void teleport ()
 {
     char_x = random_in_range (1, 20);
     char_y = random_in_range (1, 20);
@@ -275,7 +279,7 @@ void set_random_robots ()
 
 /**
  * Solves collisions of robots
- * and returns true if the player is dead
+ * and returns true if the player is hit
  */
 bool check_collision ()
 {
@@ -291,6 +295,10 @@ bool check_collision ()
                 robots[x][2] = 1;
                 }
             }
+        if (robots[i][0] == char_x &&
+            robots[i][1] == char_y) {
+            return true;
+        }
     }
     return false;
 }
