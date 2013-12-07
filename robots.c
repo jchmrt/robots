@@ -23,6 +23,7 @@ void teleport ();
 void set_random_robots ();
 void reset ();
 bool check_collision ();
+bool all_dead ();
 bool game_over ();
 int random_in_range (unsigned int min, unsigned int max);
 
@@ -60,7 +61,7 @@ void main (int argc, char** argv)
     if (!override) {
         set_direct_input ();
         bool end = false;
-        bool hit, retry;
+        bool hit, level_end, retry;
         srand(time(NULL)); // Set time as seed for random ints
         teleport ();
         set_random_robots ();
@@ -99,7 +100,11 @@ void main (int argc, char** argv)
                     break;
             }
             move_robots ();
+
+            /* Needs to be before draw_screen (),
+               because it also handles collisions.*/
             hit = check_collision ();
+            level_end = all_dead ();
             draw_screen ();
             if (hit) {
                 retry = game_over ();
@@ -319,6 +324,22 @@ bool check_collision ()
         }
     }
     return false;
+}
+
+/**
+ * Returns true if all robots are dead
+ */
+bool all_dead ()
+{
+    int i;
+    bool dead = true; // true to begin with false if one isnt
+    for (i = 0; i < robots_num; i++) {
+        // if robot is dead
+        if (robots[i][2] == 0) {
+            dead = false;
+        }
+    }
+    return dead;
 }
 
 /**
