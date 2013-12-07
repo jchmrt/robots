@@ -109,6 +109,10 @@ void main (int argc, char** argv)
                because it also handles collisions.*/
             hit = check_collision ();
             level_end = all_dead ();
+            if (level_end && !end) {
+                new_level ();
+                level_end = false;
+            }
             draw_screen ();
             if (hit) {
                 retry = game_over ();
@@ -117,10 +121,6 @@ void main (int argc, char** argv)
                 } else {
                     end = true;
                 }
-            }
-            if (level_end && !end) {
-                new_level ();
-                level_end = false;
             }
         }
         restore_direct_input ();
@@ -227,7 +227,6 @@ void draw_screen ()
  * Move the char by x, y
  * x, if positive moves to the right
  * y, if positive moves to the left
- * @param int y: movement on the y axis
  */
 void move_char (int x, int y)
 {
@@ -325,6 +324,7 @@ void reset ()
  */
 void new_level ()
 {
+    draw_screen ();
     /* Show the player how he has won
      * and then continue. */
     sleep (1); // 1 second
