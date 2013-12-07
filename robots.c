@@ -22,6 +22,7 @@ void move_robots ();
 void teleport ();
 void set_random_robots ();
 void reset ();
+void new_level ();
 bool check_collision ();
 bool all_dead ();
 bool game_over ();
@@ -34,7 +35,8 @@ int char_x;
 int char_y;
 char robots_char = '+';
 int robots_speed = 1;
-int robots_num = 10;
+int initial_robots_num = 10; 
+int robots_num;
 int robots[1][3];
 char junk_char = '*';
 int lines = 20;
@@ -60,6 +62,7 @@ void main (int argc, char** argv)
 
     if (!override) {
         set_direct_input ();
+        robots_num = initial_robots_num;
         bool end = false;
         bool hit, level_end, retry;
         srand(time(NULL)); // Set time as seed for random ints
@@ -113,6 +116,10 @@ void main (int argc, char** argv)
                 } else {
                     end = true;
                 }
+            }
+            if (level_end && !end) {
+                new_level ();
+                level_end = false;
             }
         }
         restore_direct_input ();
@@ -295,9 +302,24 @@ void set_random_robots ()
 
 void reset ()
 {
+    robots_num = initial_robots_num;
     teleport ();
     set_random_robots ();
     draw_screen ();
+}
+
+/**
+ * Initializes a new level
+ */
+void new_level ()
+{
+    /* Show the player how he has won
+     * and then continue. */
+    sleep (1); // 1 second
+
+    robots_num += 5;
+    teleport ();
+    set_random_robots ();
 }
 
 /**
@@ -348,6 +370,9 @@ bool all_dead ()
  */
 bool game_over ()
 {
+    // Show the user how he died before continuing
+    sleep (1);
+
     struct winsize w;
     ioctl(0, TIOCGWINSZ, &w);
 
@@ -359,12 +384,16 @@ bool game_over ()
     system("clear");
     printf ("%*s%s\n", indent, "", game_over_str);
     printf ("%*s%s\n", (int)((strlen ("Retry?[y/n]") - columns) / 2), "", "Retry?[y/n]");
-    char input = getchar ();
-    bool output;
-    if (input == 'y') {
-        output = true;
-    } else {
-        output = false;
+    bool answer = false, output;
+    while (!answer) {
+        char input = getchar ();
+        if (input == 'y') {
+            output = true;
+            answer = true;
+        } else if (input == 'n') {
+            output = false;
+            answer = true;
+        }
     }
     return output;
 }
