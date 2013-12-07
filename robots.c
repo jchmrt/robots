@@ -31,6 +31,7 @@ int random_in_range (unsigned int min, unsigned int max);
 static struct termios oldt, newt;   // Needed for random number generation
 bool verbose = false;
 char char_char = '#';
+char dead_char = '@';
 int char_x;
 int char_y;
 char robots_char = '+';
@@ -179,9 +180,20 @@ void draw_screen ()
             printf ("|");
             for (x = 0; x < columns; x++) {
                 if (x == (char_x - 1) && i == char_y) {
-                    printf (" %c ", char_char);
+                    int y;
+                    bool char_dead = false;
+                    for (y = 0; y < robots_num; y++) {
+                        if (x == (robots[y][0] - 1) && i == robots[y][1]) {
+                                char_dead = true;
+                        }
+                    }
+                    if (!char_dead) {
+                        printf (" %c ", char_char);
+                    } else {
+                        printf (" \e[0;33m%c\e[0m ", dead_char);
+                    }
                 } else {
-                    int y, z;
+                    int y;
                     bool something_here = false;
                     for (y = 0; y < robots_num; y++) {
                         if (x == (robots[y][0] - 1) && i == robots[y][1]) {
