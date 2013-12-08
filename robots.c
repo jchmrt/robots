@@ -46,6 +46,17 @@ char junk_char = '*';
 int lines = 20;
 int columns = 20;
 
+// Controls
+int controls = 1;
+char up[]          = {'8', 'w'};
+char up_right[]    = {'9', 'e'};
+char right[]       = {'6', 'd'};
+char down_right[]  = {'3', 'c'};
+char down[]        = {'2', 'x'};
+char down_left[]   = {'1', 'z'};
+char left[]        = {'4', 'a'};
+char up_left[]     = {'7', 'q'};
+
 void main (int argc, char** argv)
 {
     int i;
@@ -75,36 +86,24 @@ void main (int argc, char** argv)
         draw_screen ();
         while (!end) {
             char input = getchar ();
-            switch (input) {
-                case '8':
-                    move_char (0, -1);
-                    break;
-                case '9':
-                    move_char (1, -1);
-                    break;
-                case '6':
-                    move_char (1, 0);
-                    break;
-                case '3':
-                    move_char (1, 1);
-                    break;
-                case '2':
-                    move_char (0, 1);
-                    break;
-                case '1':
-                    move_char (-1, 1);
-                    break;
-                case '4':
-                    move_char (-1, 0);
-                    break;
-                case '7':
-                    move_char (-1, -1);
-                    break;
-                case 't':
-                    teleport ();
-                    break;
-                default:
-                    break;
+            if (input == up[controls]) {
+                move_char (0, -1);
+            } else if (input == up_right[controls]) {
+                move_char (1, -1);
+            } else if (input == right[controls]) {
+                move_char (1, 0);
+            } else if (input == down_right[controls]) {
+                move_char (1, 1);
+            } else if (input == down[controls]) {
+                move_char (0, 1);
+            } else if (input == down_left[controls]) {
+                move_char (-1, 1);
+            } else if (input == left[controls]) {
+                move_char (-1, 0);
+            } else if (input == up_left[controls]) {
+                move_char (-1, -1);
+            } else if (input == 't') {
+                teleport ();
             }
             move_robots ();
 
