@@ -45,8 +45,8 @@ int initial_robots_num = 10;
 int robots_num;
 int robots[1][3];
 char junk_char = '*';
-int lines = 20;
-int columns = 20;
+int field_lines = 20;
+int field_columns = 20;
 
 // Controls
 int controls = 0;
@@ -179,7 +179,7 @@ void draw_start_screen ()
         struct winsize w;
         ioctl(0, TIOCGWINSZ, &w);
 
-        int columns = w.ws_col; // w.ws_row for lines
+        int term_columns = w.ws_col; // w.ws_row for lines
 
         char line[256];
 
@@ -187,10 +187,10 @@ void draw_start_screen ()
         while (fgets(line, sizeof(line), text_file)) {
             /* note that fgets don't strip the terminating \n, checking its
              * presence would allow to handle lines longer that sizeof(line) */
-            int indent = (strlen(line) - columns) / 2;
+            int indent = (strlen(line) - term_columns) / 2;
             printf ("%*s%s", indent, "", line);
         }
-        printf ("%*s", (columns / 2), "");
+        printf ("%*s", (term_columns / 2), "");
         bool answer = false;
         char input;
         while (!answer) {
@@ -222,8 +222,7 @@ void draw_settings_screen ()
 
     struct winsize w;
     ioctl(0, TIOCGWINSZ, &w);
-
-    int columns = w.ws_col; // w.ws_row for lines
+    int term_columns = w.ws_col; // w.ws_row for lines
 
     char line[256];
 
@@ -231,10 +230,10 @@ void draw_settings_screen ()
     while (fgets(line, sizeof(line), text_file)) {
         /* note that fgets don't strip the terminating \n, checking its
          * presence would allow to handle lines longer that sizeof(line) */
-        int indent = (strlen(line) - columns) / 2;
+        int indent = (strlen(line) - term_columns) / 2;
         printf ("%*s%s", indent, "", line);
     }
-    printf ("%*s", (columns / 2), "");
+    printf ("%*s", (term_columns / 2), "");
     bool answer = false;
     char input;
     while (!answer) {
@@ -254,13 +253,22 @@ void draw_settings_screen ()
 void draw_screen ()
 {
     system("clear");
+
+    struct winsize w;
+    ioctl(0, TIOCGWINSZ, &w);
+    int term_columns = w.ws_col; // w.ws_row for lines
+
+    int indent = ((((field_columns * 3) + 2) - term_columns) / 2);
+
     int i;
     int x;
-    for (i = 0; i < (lines + 2); i++) {
+    for (i = 0; i < (field_lines + 2); i++) {
+        // Indent the line, to center it
+        printf ("%*s", indent, "");
         // If the current line is the first or last, print a border
-        if (i == 0 || i == ((lines + 2) - 1)) {
+        if (i == 0 || i == ((field_lines + 2) - 1)) {
             printf ("_");
-            for (x = 0; x < columns; x++) {
+            for (x = 0; x < field_columns; x++) {
                 printf ("___");
             }
             printf ("_");
@@ -269,7 +277,7 @@ void draw_screen ()
         // Else, print normal line
         else {
             printf ("|");
-            for (x = 0; x < columns; x++) {
+            for (x = 0; x < field_columns; x++) {
                 if (x == (char_x - 1) && i == char_y) {
                     int y;
                     bool char_dead = false;
@@ -326,10 +334,10 @@ void move_char (int x, int y)
 {
    int new_x = char_x + x;
    int new_y = char_y + y;
-   if (new_x <= columns && new_x >= 1) {
+   if (new_x <= field_columns && new_x >= 1) {
        char_x = new_x;
    }
-   if (new_y <= lines && new_y >= 1)   {
+   if (new_y <= field_lines && new_y >= 1)   {
        char_y = new_y;
    }
 }
@@ -482,15 +490,15 @@ bool game_over ()
     struct winsize w;
     ioctl(0, TIOCGWINSZ, &w);
 
-    int columns = w.ws_col; // w.ws_row for lines
+    int term_columns = w.ws_col; // w.ws_row for lines
 
     char *game_over_str = "Game Over!";
-    int indent = (strlen(game_over_str) - columns) / 2;
+    int indent = (strlen(game_over_str) - term_columns) / 2;
 
     system("clear");
     printf ("%*s%s\n", indent, "", game_over_str);
     printf ("%*s%s\n", 
-            (int)((strlen ("Retry?[y/n]") - columns) / 2), "", "Retry?[y/n]");
+            (int)((strlen ("Retry?[y/n]") - term_columns) / 2), "", "Retry?[y/n]");
     bool answer = false, output;
     while (!answer) {
         char input = getchar ();
