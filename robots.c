@@ -32,6 +32,9 @@ static struct termios oldt, newt;   // Needed for random number generation
 bool verbose = false;
 char char_char = '#';
 char dead_char = '@';
+char *color_reset  = "\e[0m";
+char *color_yellow = "\e[0;33m";
+char *color_blue   = "\e[0;34m";
 int char_x;
 int char_y;
 char robots_char = '+';
@@ -188,9 +191,9 @@ void draw_screen ()
                         }
                     }
                     if (!char_dead) {
-                        printf (" %c ", char_char);
+                        printf (" %s%c%s ", color_blue, char_char, color_reset);
                     } else {
-                        printf (" \e[0;33m%c\e[0m ", dead_char);
+                        printf (" %s%c%s ", color_yellow, dead_char, color_reset);
                     }
                 } else {
                     int y;
@@ -203,7 +206,7 @@ void draw_screen ()
                                 something_here = true;
                             // Robot has become junk
                             } else if (robots[y][2] == 1) {
-                                printf (" %c ", junk_char);
+                                printf (" %s%c%s ", color_yellow, junk_char, color_reset);
                                 something_here = true;
                             }
                         }
