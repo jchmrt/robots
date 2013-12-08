@@ -16,6 +16,8 @@ void set_direct_input ();
 void restore_direct_input ();
 void display_help ();
 void display_version ();
+void draw_start_screen ();
+void draw_settings_screen ();
 void draw_screen ();
 void move_char (int x, int y);
 void move_robots ();
@@ -47,7 +49,7 @@ int lines = 20;
 int columns = 20;
 
 // Controls
-int controls = 1;
+int controls = 0;
 char up[]          = {'8', 'w'};
 char up_right[]    = {'9', 'e'};
 char right[]       = {'6', 'd'};
@@ -77,6 +79,7 @@ void main (int argc, char** argv)
 
     if (!override) {
         set_direct_input ();
+        draw_start_screen ();
         robots_num = initial_robots_num;
         bool end = false;
         bool hit, level_end, retry;
@@ -126,6 +129,7 @@ void main (int argc, char** argv)
             }
         }
         restore_direct_input ();
+        system ("clear");
     }
 }
 
@@ -157,9 +161,94 @@ void display_help ()
     printf ("help\n");
 }
 
-void display_version ()
+/**
+ * Draws begin screen and gets preferences
+ */
+void draw_start_screen ()
 {
-    printf ("version\n");
+    bool play = false;
+    while (!play) {
+        char text_filename[] = "start_screen";
+        FILE *text_file = fopen(text_filename, "r");
+        if (text_file == NULL) {
+            fprintf(stderr, "Can't open title file %s!\n",
+                    text_filename);
+            exit(1);
+        }
+
+        struct winsize w;
+        ioctl(0, TIOCGWINSZ, &w);
+
+        int columns = w.ws_col; // w.ws_row for lines
+
+        char line[256];
+
+        system("clear");
+        while (fgets(line, sizeof(line), text_file)) {
+            /* note that fgets don't strip the terminating \n, checking its
+             * presence would allow to handle lines longer that sizeof(line) */
+            int indent = (strlen(line) - columns) / 2;
+            printf ("%*s%s", indent, "", line);
+        }
+        printf ("%*s", (columns / 2), "");
+        bool answer = false;
+        char input;
+        while (!answer) {
+            input = getchar ();
+            if (input == 'p') {
+                play = true;
+                answer = true;
+            } else if (input == 's') {
+                draw_settings_screen ();
+                answer = true;
+            }
+        }
+    }
+}
+
+/**
+ * Shows settings screen and
+ * changes settings on user input
+ */
+void draw_settings_screen ()
+{
+    char text_filename[] = "settings_screen";
+    FILE *text_file = fopen(text_filename, "r");
+    if (text_file == NULL) {
+        fprintf(stderr, "Can't open title file %s!\n",
+                text_filename);
+        exit(1);
+    }
+
+    struct winsize w;
+    ioctl(0, TIOCGWINSZ, &w);
+
+    int columns = w.ws_col; // w.ws_row for lines
+
+    char line[256];
+
+    system("clear");
+    while (fgets(line, sizeof(line), text_file)) {
+        /* note that fgets don't strip the terminating \n, checking its
+         * presence would allow to handle lines longer that sizeof(line) */
+        int indent = (strlen(line) - columns) / 2;
+        printf ("%*s%s", indent, "", line);
+    }
+    printf ("%*s", (columns / 2), "");
+    bool answer = false;
+    char input;
+    while (!answer) {
+        input = getchar ();
+        if (input == '1') {
+            controls = 0;
+            answer = true;
+        } else if (input == '2') {
+            controls = 1;
+            answer = true;
+        } else if (input == 'b') {
+            answer = true;
+        }
+    }
 }
 
 void draw_screen ()
@@ -190,9 +279,11 @@ void draw_screen ()
                         }
                     }
                     if (!char_dead) {
-                        printf (" %s%c%s ", color_blue, char_char, color_reset);
+                        printf (" %s%c%s ", 
+                                color_blue, char_char, color_reset);
                     } else {
-                        printf (" %s%c%s ", color_yellow, dead_char, color_reset);
+                        printf (" %s%c%s ", 
+                                color_yellow, dead_char, color_reset);
                     }
                 } else {
                     int y;
@@ -205,7 +296,8 @@ void draw_screen ()
                                 something_here = true;
                             // Robot has become junk
                             } else if (robots[y][2] == 1) {
-                                printf (" %s%c%s ", color_yellow, junk_char, color_reset);
+                                printf (" %s%c%s ", 
+                                        color_yellow, junk_char, color_reset);
                                 something_here = true;
                             }
                         }
@@ -397,7 +489,8 @@ bool game_over ()
 
     system("clear");
     printf ("%*s%s\n", indent, "", game_over_str);
-    printf ("%*s%s\n", (int)((strlen ("Retry?[y/n]") - columns) / 2), "", "Retry?[y/n]");
+    printf ("%*s%s\n", 
+            (int)((strlen ("Retry?[y/n]") - columns) / 2), "", "Retry?[y/n]");
     bool answer = false, output;
     while (!answer) {
         char input = getchar ();
