@@ -35,6 +35,7 @@ bool verbose = false;
 char char_char = '#';
 char dead_char = '@';
 char *color_reset  = "\e[0m";
+char *color_red    = "\e[0;31m";
 char *color_yellow = "\e[0;33m";
 char *color_blue   = "\e[0;34m";
 int char_x;
@@ -300,7 +301,8 @@ void draw_screen ()
                         if (x == (robots[y][0] - 1) && i == robots[y][1]) {
                             // Robot is alive
                             if (robots[y][2] == 0) {
-                                printf (" %c ", robots_char);
+                                printf (" %s%c%s ",
+                                        color_red, robots_char, color_reset);
                                 something_here = true;
                             // Robot has become junk
                             } else if (robots[y][2] == 1) {
