@@ -152,7 +152,8 @@ void set_direct_input ()
     tcsetattr( STDIN_FILENO, TCSANOW, &newt);
 }
 
-void restore_direct_input () {
+void restore_direct_input ()
+{
     tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
 }
 
