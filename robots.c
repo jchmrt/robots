@@ -48,6 +48,7 @@ int robots[1][3];
 char junk_char = '*';
 int field_lines = 20;
 int field_columns = 20;
+int level = 1;
 
 // Controls
 int controls = 0;
@@ -321,6 +322,7 @@ void draw_screen ()
             printf ("\n");
         }
     }
+    printf ("Level: %.d\n", level);
     if (verbose) {
         printf ("Char: %.d, %.d\n", char_x, char_y);
         printf ("Robot: %.d, %.d\n", robots[0][0], robots[0][1]);
@@ -432,6 +434,7 @@ void new_level ()
     /* Show the player how he has won
      * and then continue. */
     sleep (1); // 1 second
+    level++;
 
     robots_num += 5;
     teleport ();
