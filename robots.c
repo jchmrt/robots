@@ -35,6 +35,7 @@ bool verbose = false;
 char char_char = '#';
 char dead_char = '@';
 char *color_reset  = "\e[0m";
+char *color_red    = "\e[0;31m";
 char *color_yellow = "\e[0;33m";
 char *color_blue   = "\e[0;34m";
 int char_x;
@@ -47,6 +48,7 @@ int robots[1][3];
 char junk_char = '*';
 int field_lines = 20;
 int field_columns = 20;
+int level = 1;
 
 // Controls
 int controls = 0;
@@ -301,7 +303,8 @@ void draw_screen ()
                         if (x == (robots[y][0] - 1) && i == robots[y][1]) {
                             // Robot is alive
                             if (robots[y][2] == 0) {
-                                printf (" %c ", robots_char);
+                                printf (" %s%c%s ",
+                                        color_red, robots_char, color_reset);
                                 something_here = true;
                             // Robot has become junk
                             } else if (robots[y][2] == 1) {
@@ -320,6 +323,7 @@ void draw_screen ()
             printf ("\n");
         }
     }
+    printf ("Level: %.d\n", level);
     if (verbose) {
         printf ("Char: %.d, %.d\n", char_x, char_y);
         printf ("Robot: %.d, %.d\n", robots[0][0], robots[0][1]);
@@ -417,6 +421,7 @@ void set_random_robots ()
 void reset ()
 {
     robots_num = initial_robots_num;
+    level = 1;
     teleport ();
     set_random_robots ();
     draw_screen ();
@@ -431,6 +436,7 @@ void new_level ()
     /* Show the player how he has won
      * and then continue. */
     sleep (1); // 1 second
+    level++;
 
     robots_num += 5;
     teleport ();
