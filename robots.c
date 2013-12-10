@@ -28,6 +28,7 @@ void new_level ();
 bool check_collision ();
 bool all_dead ();
 bool game_over ();
+int get_int_len(int value);
 int random_in_range (unsigned int min, unsigned int max);
 
 static struct termios oldt, newt;   // Needed for random number generation
@@ -192,10 +193,10 @@ void draw_start_screen ()
             int indent = (strlen(line) - term_columns) / 2;
             printf ("%*s%s", indent, "", line);
         }
-        printf ("%*s", (term_columns / 2), "");
         bool answer = false;
         char input;
         while (!answer) {
+            printf ("\r%*s", (term_columns / 2), "");
             input = getchar ();
             if (input == 'p') {
                 play = true;
@@ -235,10 +236,10 @@ void draw_settings_screen ()
         int indent = (strlen(line) - term_columns) / 2;
         printf ("%*s%s", indent, "", line);
     }
-    printf ("%*s", (term_columns / 2), "");
     bool answer = false;
     char input;
     while (!answer) {
+        printf ("\r%*s", (term_columns / 2), "");
         input = getchar ();
         if (input == '1') {
             controls = 0;
@@ -499,14 +500,25 @@ bool game_over ()
     int term_columns = w.ws_col; // w.ws_row for lines
 
     char *game_over_str = "Game Over!";
-    int indent = (strlen(game_over_str) - term_columns) / 2;
+    char *level_str = "You made it to level ";
+    char *retry_str = "Retry?[y/n]";
+
+    int level_number_length = get_int_len(level);
+
+    int game_over_indent = (strlen(game_over_str) - term_columns) / 2;
+    int level_indent = ((strlen(level_str) + level_number_length)
+                        - term_columns) / 2;
+    int retry_indent = (strlen(retry_str) - term_columns) / 2;
 
     system("clear");
-    printf ("%*s%s\n", indent, "", game_over_str);
-    printf ("%*s%s\n", 
-            (int)((strlen ("Retry?[y/n]") - term_columns) / 2), "", "Retry?[y/n]");
+
+    printf ("%*s%s\n", game_over_indent, "", game_over_str);
+    printf ("%*s%s%.d\n", level_indent, "", level_str, level);
+    printf ("%*s%s\n", retry_indent, "", retry_str);
+
     bool answer = false, output;
     while (!answer) {
+        printf ("\r%*s", (term_columns / 2), "");
         char input = getchar ();
         if (input == 'y') {
             output = true;
@@ -517,6 +529,16 @@ bool game_over ()
         }
     }
     return output;
+}
+
+/**
+ * Returns length of a int
+ * when printed in decimals
+ */
+int get_int_len (int value){
+    int l=1;
+    while(value>9){ l++; value/=10; }
+    return l;
 }
 
 int random_in_range (unsigned int min, unsigned int max)
