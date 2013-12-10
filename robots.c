@@ -420,6 +420,7 @@ void set_random_robots ()
 void reset ()
 {
     robots_num = initial_robots_num;
+    level = 1;
     teleport ();
     set_random_robots ();
     draw_screen ();
