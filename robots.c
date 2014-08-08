@@ -1,5 +1,28 @@
 /**
- * A ASCII Robots Game
+ * A text-based Robots Game
+ *             _____
+ *            |     |
+ *            | | | |
+ *            |_____|
+ *      ____ ___|_|___ ____
+ *     ()___)         ()___)
+ *     // /|           |\ \\
+ *    // / |           | \ \\
+ *   (___) |___________| (___)
+ *   (___)   (_______)   (___)
+ *   (___)     (___)     (___)
+ *   (___)      |_|      (___)
+ *   (___)  ___/___\___   | |
+ *    | |  |           |  | |
+ *    | |  |___________| /___\
+ *   /___\  |||     ||| //   \\
+ *  //   \\ |||     ||| \\   //
+ *  \\   // |||     |||  \\ //
+ *   \\ // ()__)   (_ ()
+ *         ///       \\\
+ *        ///         \\\
+ *      _///___     ___\\\_
+ *     |_______|   |_______|
  */
 
 #include <stdio.h>
@@ -31,10 +54,12 @@ bool game_over ();
 int get_int_len(int value);
 int random_in_range (unsigned int min, unsigned int max);
 
-static struct termios oldt, newt;   // Needed for random number generation
+// Needed for random number generation
+static struct termios oldt, newt;
+
 bool verbose = false;
-char char_char = '#';
-char dead_char = '@';
+char char_char = '@';
+char dead_char = '#';
 char *color_reset  = "\e[0m";
 char *color_red    = "\e[0;31m";
 char *color_yellow = "\e[0;33m";
@@ -49,18 +74,23 @@ int robots[1][3];
 char junk_char = '*';
 int field_lines = 20;
 int field_columns = 20;
+
+int new_level_bonus = 10;
+
 int level = 1;
+int score = 0;
 
 // Controls
-int controls = 0;
-char up[]          = {'8', 'w'};
-char up_right[]    = {'9', 'e'};
-char right[]       = {'6', 'd'};
-char down_right[]  = {'3', 'c'};
-char down[]        = {'2', 'x'};
-char down_left[]   = {'1', 'z'};
-char left[]        = {'4', 'a'};
-char up_left[]     = {'7', 'q'};
+int controls = 1;
+char up[]          = {'8', 'k'};
+char up_right[]    = {'9', 'u'};
+char right[]       = {'6', 'l'};
+char down_right[]  = {'3', 'n'};
+char down[]        = {'2', 'j'};
+char down_left[]   = {'1', 'b'};
+char left[]        = {'4', 'h'};
+char up_left[]     = {'7', 'y'};
+
 
 void main (int argc, char** argv)
 {
@@ -83,10 +113,12 @@ void main (int argc, char** argv)
     if (!override) {
         set_direct_input ();
         draw_start_screen ();
+
         robots_num = initial_robots_num;
         bool end = false;
         bool hit, level_end, retry;
-        srand(time(NULL)); // Set time as seed for random ints
+
+        srand (time(NULL)); // Set time as seed for random ints
         teleport ();
         set_random_robots ();
         draw_screen ();
@@ -139,19 +171,20 @@ void main (int argc, char** argv)
 void set_direct_input ()
 {
 
-    /* tcgetattr gets the parameters of the current terminal
-     * STDIN_FILENO will tell tcgetattr that it should write the settings
-     * of stdin to oldt*/
+    /* tcgetattr gets the parameters of the current terminal *
+    STDIN_FILENO will tell tcgetattr that it should write the settings
+    * of stdin to oldt*/
     tcgetattr( STDIN_FILENO, &oldt);
     /*now the settings will be copied*/
     newt = oldt;
 
-    /*ICANON normally takes care that one line at a time will be processed
-     *     that means it will return if it sees a "\n" or an EOF or an EOL*/
+    /*ICANON normally takes care that one line at a time will be
+    processed * that means it will return if it sees a "\n" or an EOF
+    or an EOL*/
     newt.c_lflag &= ~(ICANON);          
 
-    /*Those new settings will be set to STDIN
-     *     TCSANOW tells tcsetattr to change attributes immediately. */
+    /*Those new settings will be set to STDIN * TCSANOW tells
+    tcsetattr to change attributes immediately. */
     tcsetattr( STDIN_FILENO, TCSANOW, &newt);
 }
 
@@ -189,8 +222,9 @@ void draw_start_screen ()
 
         system("clear");
         while (fgets(line, sizeof(line), text_file)) {
-            /* note that fgets don't strip the terminating \n, checking its
-             * presence would allow to handle lines longer that sizeof(line) */
+            /* note that fgets don't strip the terminating \n,
+            checking its * presence would allow to handle lines longer
+            that sizeof(line) */
             int indent = (strlen(line) - term_columns) / 2;
             printf ("%*s%s", indent, "", line);
         }
@@ -232,8 +266,9 @@ void draw_settings_screen ()
 
     system("clear");
     while (fgets(line, sizeof(line), text_file)) {
-        /* note that fgets don't strip the terminating \n, checking its
-         * presence would allow to handle lines longer that sizeof(line) */
+        /* note that fgets don't strip the terminating \n, checking
+        its * presence would allow to handle lines longer that
+        sizeof(line) */
         int indent = (strlen(line) - term_columns) / 2;
         printf ("%*s%s", indent, "", line);
     }
@@ -423,6 +458,7 @@ void reset ()
 {
     robots_num = initial_robots_num;
     level = 1;
+    score = 0;
     teleport ();
     set_random_robots ();
     draw_screen ();
@@ -438,6 +474,7 @@ void new_level ()
      * and then continue. */
     sleep (1); // 1 second
     level++;
+    score += new_level_bonus * level;
 
     robots_num += 5;
     teleport ();
@@ -453,13 +490,17 @@ bool check_collision ()
     int i, x;
     for (i = 0; i < robots_num; i++) {
         for (x = 0; x < i; x++) {
-            if (robots[i][0] == robots[x][0] && robots[i][1] == robots[x][1]) {
+            if (robots[i][0] == robots[x][0] 
+             && robots[i][1] == robots[x][1]) {
                 robots[i][0] = 0;
                 robots[i][1] = 0;
                 // Indicate that robots are junk
                 robots[i][2] = 1;
                 // Leave one of the two robots in place as junk
                 robots[x][2] = 1;
+                
+                // Update the score
+                score += level;
                 }
             }
         if (robots[i][0] == char_x &&
@@ -502,12 +543,16 @@ bool game_over ()
 
     char *game_over_str = "Game Over!";
     char *level_str = "You made it to level ";
+    char *score_str = "Your score was ";
     char *retry_str = "Retry?[y/n]";
 
-    int level_number_length = get_int_len(level);
+    int level_number_length = get_int_len (level);
+    int score_number_length = get_int_len (score);
 
     int game_over_indent = (strlen(game_over_str) - term_columns) / 2;
     int level_indent = ((strlen(level_str) + level_number_length)
+                        - term_columns) / 2;
+    int score_indent = ((strlen (level_str) + score_number_length)
                         - term_columns) / 2;
     int retry_indent = (strlen(retry_str) - term_columns) / 2;
 
@@ -515,6 +560,13 @@ bool game_over ()
 
     printf ("%*s%s\n", game_over_indent, "", game_over_str);
     printf ("%*s%s%.d\n", level_indent, "", level_str, level);
+    if (score == 0) {
+        char *score_zero_str = "Your score was 0";
+        printf("%*s%s\n", (strlen(score_zero_str) - term_columns) / 2,
+                "", score_zero_str);
+    } else {
+        printf ("%*s%s%.d\n", score_indent, "", score_str, score);
+    }
     printf ("%*s%s\n", retry_indent, "", retry_str);
 
     bool answer = false, output;
