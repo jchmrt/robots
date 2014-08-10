@@ -45,6 +45,7 @@ void draw_screen ();
 void move_char (int x, int y);
 void move_robots ();
 void teleport ();
+bool wait ();
 void set_random_robots ();
 void reset ();
 void new_level ();
@@ -76,6 +77,7 @@ int field_lines = 20;
 int field_columns = 20;
 
 int new_level_bonus = 10;
+int multiplier = 1;
 
 int level = 1;
 int score = 0;
@@ -90,6 +92,7 @@ char down[]        = {'2', 'j'};
 char down_left[]   = {'1', 'b'};
 char left[]        = {'4', 'h'};
 char up_left[]     = {'7', 'y'};
+char stay[]        = {'5', '.'};
 
 
 void main (int argc, char** argv)
@@ -116,7 +119,8 @@ void main (int argc, char** argv)
 
         robots_num = initial_robots_num;
         bool end = false;
-        bool hit, level_end, retry;
+        bool hit = false;
+        bool level_end, retry;
 
         srand (time(NULL)); // Set time as seed for random ints
         teleport ();
@@ -140,9 +144,14 @@ void main (int argc, char** argv)
                 move_char (-1, 0);
             } else if (input == up_left[controls]) {
                 move_char (-1, -1);
+            } else if (input == stay[controls]) {
+                move_char (0,0);
             } else if (input == 't') {
                 teleport ();
+            } else if (input == 'w') {
+                wait();
             }
+
             move_robots ();
 
             /* Needs to be before draw_screen (),
@@ -430,6 +439,23 @@ void teleport ()
     char_y = random_in_range (1, 20);
 }
 
+/**
+ * Makes the player wait till either the level has been completed or
+ * or he is killed
+ */
+bool wait ()
+{
+    bool hit = false;
+    bool level_end = false;
+    multiplier = 4
+    while (!hit && !level_end) {
+        move_robots ();
+        hit = check_collision ();
+        level_end = all_dead ();
+        draw_screen ();
+    }
+}
+
 void set_random_robots ()
 {
     int i, x;
@@ -474,7 +500,9 @@ void new_level ()
      * and then continue. */
     sleep (1); // 1 second
     level++;
-    score += new_level_bonus * level;
+    score += new_level_bonus * level * multiplier;
+
+    multiplier = 1;
 
     robots_num += 5;
     teleport ();
