@@ -447,7 +447,7 @@ bool wait ()
 {
     bool hit = false;
     bool level_end = false;
-    multiplier = 4
+    multiplier = 4;
     while (!hit && !level_end) {
         move_robots ();
         hit = check_collision ();
@@ -590,7 +590,7 @@ bool game_over ()
     printf ("%*s%s%.d\n", level_indent, "", level_str, level);
     if (score == 0) {
         char *score_zero_str = "Your score was 0";
-        printf("%*s%s\n", (strlen(score_zero_str) - term_columns) / 2,
+        printf("%*s%s\n", (int) (strlen(score_zero_str) - term_columns) / 2,
                 "", score_zero_str);
     } else {
         printf ("%*s%s%.d\n", score_indent, "", score_str, score);
